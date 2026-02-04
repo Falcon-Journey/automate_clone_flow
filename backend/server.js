@@ -36,9 +36,9 @@ if (!fs.existsSync(screenshotsDir)) {
 // Serve static screenshots
 app.use('/screenshots', express.static(screenshotsDir));
 
-// Anima credentials
-const ANIMA_EMAIL = 'akkisinghal50+4@gmail.com';
-const ANIMA_PASSWORD = 'Test123@';
+// Anima credentials (set ANIMA_EMAIL, ANIMA_PASSWORD in production e.g. AWS)
+const ANIMA_EMAIL = process.env.ANIMA_EMAIL || 'akkisinghal50+4@gmail.com';
+const ANIMA_PASSWORD = process.env.ANIMA_PASSWORD || 'Test123@';
 
 // Clone website endpoint with Server-Sent Events for progress
 app.get('/api/clone-stream', async (req, res) => {
@@ -591,6 +591,17 @@ app.post('/api/clone', async (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
+
+// Optional: serve frontend static build (set SERVE_FRONTEND=1 and copy frontend dist into backend/frontend-dist)
+const frontendDist = path.join(__dirname, 'frontend-dist');
+if (process.env.SERVE_FRONTEND === '1' && fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/screenshots')) {
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    }
+  });
+}
 
 // Start server
 app.listen(PORT, () => {

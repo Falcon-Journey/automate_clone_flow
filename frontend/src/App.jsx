@@ -53,9 +53,10 @@ function App() {
       eventSourceRef.current.close()
     }
 
-    // Create EventSource for streaming progress
+    // Create EventSource for streaming progress (use VITE_API_URL when frontend and backend are on different hosts, e.g. AWS)
+    const apiBase = import.meta.env.VITE_API_URL || ''
     const promptParam = prompt.trim() ? `&prompt=${encodeURIComponent(prompt.trim())}` : ''
-    const eventSource = new EventSource(`/api/clone-stream?url=${encodeURIComponent(url)}${promptParam}`)
+    const eventSource = new EventSource(`${apiBase}/api/clone-stream?url=${encodeURIComponent(url)}${promptParam}`)
     eventSourceRef.current = eventSource
 
     eventSource.onmessage = (event) => {
@@ -71,7 +72,7 @@ function App() {
           }))
           addLog(data.message)
         } else if (data.type === 'preview_ready') {
-          setEarlyPreviewScreenshot(data.previewScreenshot)
+          setEarlyPreviewScreenshot(data.previewScreenshot ? (apiBase + data.previewScreenshot) : null)
           addLog(data.message || 'Preview ready. Publishing your site...')
         } else if (data.type === 'progress') {
           setProgress({
@@ -82,8 +83,8 @@ function App() {
           addLog(`Progress: ${data.message}`)
         } else if (data.type === 'complete') {
           setPreviewData({
-            screenshot: data.screenshot,
-            previewScreenshot: data.previewScreenshot,
+            screenshot: data.screenshot ? (apiBase + data.screenshot) : null,
+            previewScreenshot: data.previewScreenshot ? (apiBase + data.previewScreenshot) : null,
             editUrl: data.editUrl || data.animaUrl,
             publishedUrl: data.publishedUrl,
             message: data.message

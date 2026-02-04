@@ -21,10 +21,10 @@ RUN mkdir -p screenshots && chown -R pwuser:pwuser screenshots
 USER pwuser
 
 # Expose port (Elastic Beanstalk / ECS will map this)
-EXPOSE 5001
+EXPOSE 8080
 
 # Use PORT env var (default 5001)
-ENV PORT=5001
+ENV PORT=8080
 
 # Signal to app that it runs in Docker (headless Playwright, Chromium args)
 ENV DOCKER=1
